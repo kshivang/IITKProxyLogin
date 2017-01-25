@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Proxy Login</string>
+    <string name="proxy_login">Proxy Login</string>
+    <string name="iitk_username">IITK Username</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="logout_current_session">Logout current session!</string>
+    <string name="logout_url">https://gateway.iitk.ac.in:1003/logout?0501030a00253727</string>
+    <string name="login_url">https://gateway.iitk.ac.in:1003</string>
+    <string name="default_ping_url">http://google.com</string>
+    <string name="logged_out_message">Your current session is logged out!</string>
+    <string name="refresh_now">Refresh Now</string>
+    <string name="logout">Logout</string>
+    <string name="refresh_current_session">Refreshing current session..</string>
+    <string name="no_wifi_found">No wifi connection found!</string>
+    <string name="some_error">Some error occurred!</string>
+</resources>
