@@ -9,7 +9,7 @@ import android.support.compat.BuildConfig;
  * Created by kshivang on 22/01/17.
  */
 
-public class UserLocalDatabase {
+class UserLocalDatabase {
 
     private SharedPreferences userLocalDatabase;
     private static final String KEY_LOGIN = "l";
@@ -19,14 +19,14 @@ public class UserLocalDatabase {
     private static final String KEY_RESET_TIME = "t";
     private static final String KEY_BROADCAST_MESSAGE = "m";
 
-    public UserLocalDatabase(Context context) {
+    UserLocalDatabase(Context context) {
         userLocalDatabase = context.getSharedPreferences(BuildConfig.APPLICATION_ID,
                 Context.MODE_PRIVATE);
     }
 
-    public void setLogin(boolean logStatus, @Nullable String username,
-                         @Nullable String password, @Nullable String resetUrl,
-                         @Nullable Long time) {
+    void setLogin(boolean logStatus, @Nullable String username,
+                  @Nullable String password, @Nullable String resetUrl,
+                  @Nullable Long time) {
         SharedPreferences.Editor spEditor = userLocalDatabase.edit();
         spEditor.putBoolean(KEY_LOGIN, logStatus);
         if (logStatus) {
@@ -44,7 +44,7 @@ public class UserLocalDatabase {
         spEditor.apply();
     }
 
-    public void setRefreshURL(String refreshURL, Long resetTime) {
+    void setRefreshURL(String refreshURL, Long resetTime) {
         SharedPreferences.Editor spEditor = userLocalDatabase.edit();
         spEditor.putString(KEY_RESET_URL, refreshURL);
         spEditor.putLong(KEY_RESET_TIME, resetTime);
@@ -52,25 +52,33 @@ public class UserLocalDatabase {
         spEditor.apply();
     }
 
-    public String getRefreshURL() {
+    String getRefreshURL() {
         return userLocalDatabase.getString(KEY_RESET_URL, "");
     }
 
-    public long getRefreshTime() {
+    long getRefreshTime() {
         return userLocalDatabase.getLong(KEY_RESET_TIME, -1L);
     }
 
-    public void setBroadcastMessage(@Nullable String message) {
+    String getUsername() {
+        return userLocalDatabase.getString(KEY_USERNAME, "");
+    }
+
+    String getPassword() {
+        return userLocalDatabase.getString(KEY_PASSWORD, "");
+    }
+
+    void setBroadcastMessage(@Nullable String message) {
         SharedPreferences.Editor spEditor = userLocalDatabase.edit();
         spEditor.putString(KEY_BROADCAST_MESSAGE, message);
         spEditor.apply();
     }
 
-    public String getBroadcastMessage() {
+    String getBroadcastMessage() {
         return userLocalDatabase.getString(KEY_BROADCAST_MESSAGE, null);
     }
 
-    public boolean isLogin() {
+    boolean isLogin() {
         return userLocalDatabase.getBoolean(KEY_LOGIN, false);
     }
 

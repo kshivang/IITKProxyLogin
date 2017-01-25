@@ -1,10 +1,14 @@
 package com.iitk.proxylogin;
 
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -17,6 +21,8 @@ import com.android.volley.toolbox.StringRequest;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.iitk.proxylogin.MyTaskService.mId;
 
 /**
  * Created by kshivang on 26/01/17.
@@ -43,11 +49,12 @@ class LogHandler {
     }
 
     interface OnProgressListener {
-        void onProgress();
-        void onFinish();
+        void onProgress(String message);
+        void onFinish(String message);
     }
 
     private void onPing(final String userName, final String password) {
+        listener.onProgress("Pinging at..");
         (new Handler()).postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -56,7 +63,7 @@ class LogHandler {
                         new Response.Listener<String>() {
                             @Override
                             public void onResponse(String response) {
-                                listener.onFinish();
+                                listener.onFinish("You are not on iitk fortinet network");
                                 Toast.makeText(mContext, "You are not on " +
                                                 "iitk fortinet network!",
                                         Toast.LENGTH_SHORT).show();
@@ -73,13 +80,13 @@ class LogHandler {
                                                 st.lastIndexOf("\""));
                                         onMagicRequest(userName, password, redirectUrl);
                                     } else {
-                                        listener.onFinish();
+                                        listener.onFinish("Unknown error while ping!");
                                         Toast.makeText(mContext, "Error Code: " +
                                                         response.statusCode,
                                                 Toast.LENGTH_SHORT).show();
                                     }
                                 } else {
-                                    listener.onFinish();
+                                    listener.onFinish("Error while ping!");
                                     Toast.makeText(mContext, "Some error occurred",
                                             Toast.LENGTH_SHORT).show();
                                 }
@@ -98,6 +105,7 @@ class LogHandler {
     }
 
     private void onMagicRequest(final String username, final String password, String url) {
+        listener.onProgress("Magic request..");
         StringRequest request = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
                     @Override
@@ -113,7 +121,7 @@ class LogHandler {
                     public void onErrorResponse(VolleyError error) {
                         Toast.makeText(mContext, "Error in onMagicRequest",
                                 Toast.LENGTH_SHORT).show();
-                        listener.onFinish();
+                        listener.onFinish("Error in magic request!");
                     }
                 }
         ) {
@@ -128,12 +136,13 @@ class LogHandler {
     }
 
     private void onLogin(final String username, final String password, final String magic) {
+        listener.onProgress("Login..");
         StringRequest request = new StringRequest(Request.Method.POST,
                 mContext.getString(R.string.login_url),
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        listener.onFinish();
+                        listener.onFinish("Logged in!");
                         String refreshURL = response.substring(response.indexOf(".href=\"") + 7,
                                 response.lastIndexOf("\";"));
                         Toast.makeText(mContext, "Fortinet Logged in!",
@@ -149,7 +158,7 @@ class LogHandler {
                     public void onErrorResponse(VolleyError error) {
                         Toast.makeText(mContext, "Check your username and password!",
                                 Toast.LENGTH_SHORT).show();
-                        listener.onFinish();
+                        listener.onFinish("Check your credentials!");
                     }
                 }
         ) {
@@ -174,7 +183,7 @@ class LogHandler {
     }
 
     void onLog(@Nullable final String username, @Nullable final String password) {
-        listener.onProgress();
+        listener.onProgress("Logging out..");
         StringRequest request = new StringRequest(Request.Method.GET,
                 mContext.getString(R.string.logout_url),
                 new Response.Listener<String>() {
@@ -186,7 +195,7 @@ class LogHandler {
                         } else {
                             Toast.makeText(mContext, R.string.logged_out_message,
                                     Toast.LENGTH_SHORT).show();
-                            listener.onFinish();
+                            listener.onFinish("Logged out!");
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -199,7 +208,7 @@ class LogHandler {
                     if (username != null) {
                         onPing(username, password);
                     } else {
-                        listener.onFinish();
+                        listener.onFinish("Error logging out!");
                     }
                 } else {
                     onPing(username, password);
@@ -215,6 +224,39 @@ class LogHandler {
         };
         request.setShouldCache(false);
         volleyController.addToRequestQueue(request);
+    }
+
+    public void showNotification(String contentText, Class activity, boolean unDestroyable) {
+        NotificationManager mNotificationManager =
+                (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(mId);
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(mContext)
+                        .setSmallIcon(R.drawable.black_logo)
+                        .setContentTitle("Proxy Login")
+                        .setContentText(contentText)
+                        .setOngoing(unDestroyable);
+// Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(mContext, activity);
+
+// The stack builder object will contain an artificial back stack for the
+// started Activity.
+// This ensures that navigating backward from the Activity leads out of
+// your application to the Home screen.
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
+// Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(activity);
+// Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(resultPendingIntent);
+
+// mId allows you to update the notification later on.
+        mNotificationManager.notify(mId, mBuilder.build());
     }
 
 }

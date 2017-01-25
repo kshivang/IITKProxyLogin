@@ -1,7 +1,5 @@
 package com.iitk.proxylogin;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,8 +8,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
@@ -31,7 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import static com.iitk.proxylogin.MyTaskService.mId;
+import static com.iitk.proxylogin.R.string.some_error;
 
 /**
  * Created by kshivang on 22/01/17.
@@ -43,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvPrimaryText;
     private UserLocalDatabase localDatabase;
     private VolleyController volleyController;
+    private LogHandler logHandler;
 
     public static final String TASK_TAG_REFRESH = "refresh_session";
 
@@ -75,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                                 NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
                                 if (activeNetwork != null && activeNetwork.getType() ==
                                         ConnectivityManager.TYPE_WIFI) {
-                                    tvPrimaryText.setText(R.string.some_error);
+                                    tvPrimaryText.setText(some_error);
                                 } else {
                                     tvPrimaryText.setText(getString(R.string.no_wifi_found));
                                 }
@@ -88,12 +85,24 @@ public class MainActivity extends AppCompatActivity {
         localDatabase = new UserLocalDatabase(MainActivity.this);
         volleyController = VolleyController.getInstance(MainActivity.this);
 
+        logHandler = LogHandler.newInstance(this, new LogHandler.OnProgressListener() {
+            @Override
+            public void onProgress(String message) {
+                showMessage(message);
+            }
+
+            @Override
+            public void onFinish(String message) {
+                showMessage(message);
+            }
+        });
+
 
         Date d = new Date(localDatabase.getRefreshTime());
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a",
                 Locale.ENGLISH);
         String currentDateTimeString = sdf.format(d);
-        showNotification("Refreshed at " + currentDateTimeString, MainActivity.class,  true);
+        logHandler.showNotification("Refreshed at " + currentDateTimeString, MainActivity.class,  true);
 
         ConnectivityManager connManager = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -102,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
             liveSessionInBackground();
             timerStart();
         } else {
-            tvPrimaryText.setText(getString(R.string.no_wifi_found));
+            showMessage(getString(R.string.no_wifi_found));
         }
     }
 
@@ -126,11 +135,7 @@ public class MainActivity extends AppCompatActivity {
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
         if (activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-            if (localDatabase.getBroadcastMessage() == null) {
-                timerStart();
-            } else {
-                showMessage(localDatabase.getBroadcastMessage());
-            }
+            timerStart();
         } else {
             showMessage(getString(R.string.no_wifi_found));
         }
@@ -158,32 +163,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void timerStart() {
         Long lastRefreshTime = localDatabase.getRefreshTime();
-        if (lastRefreshTime != -1L) {
+        if (localDatabase.getBroadcastMessage() == null) {
             long since = Calendar.getInstance()
                     .getTimeInMillis() - lastRefreshTime;
 
-            if (since > 0 && since < 90000) {
+            if (since > 0 && since < 200000) {
                 if (timer != null) {
                     timer.cancel();
                 }
-                timer = new CountDownTimer(90000 - since, 1000) {
+                timer = new CountDownTimer(200000 - since, 1000) {
                     @Override
                     public void onTick(long l) {
                         long sec = l / 1000;
-                        tvPrimaryText.setText("Auto-refresh in " + sec + " sec!");
+                        tvPrimaryText.setText("Auto-refresh in " + sec + " sec..");
                     }
 
                     @Override
                     public void onFinish() {
-                        tvPrimaryText.setText(R.string.refresh_current_session);
+                        onReLogin();
                     }
                 };
                 timer.start();
             } else {
-                tvPrimaryText.setText(R.string.refresh_current_session);
+                onReLogin();
             }
         } else {
-            tvPrimaryText.setText(getString(R.string.some_error));
+            showMessage(localDatabase.getBroadcastMessage());
         }
 
     }
@@ -194,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
         PeriodicTask task = new PeriodicTask.Builder()
                 .setService(MyTaskService.class)
                 .setTag(TASK_TAG_REFRESH)
-                .setPeriod(7L)
+                .setPeriod(40L)
                 .setRequiredNetwork(Task.NETWORK_STATE_UNMETERED)
                 .setUpdateCurrent(true)
                 .build();
@@ -217,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
                         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a",
                                 Locale.ENGLISH);
                         String currentDateTimeString = sdf.format(d);
-                        showNotification("Refreshed at " + currentDateTimeString,
+                        logHandler.showNotification("Refreshed at " + currentDateTimeString,
                                 MainActivity.class,  true);
                         timerStart();
                         liveSessionInBackground();
@@ -250,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onReLogin(){
-
+        logHandler.onLog(localDatabase.getUsername(), localDatabase.getPassword());
     }
 
     public void onRefreshClick(View view) {
@@ -267,46 +272,15 @@ public class MainActivity extends AppCompatActivity {
         }
         localDatabase.setLogin(false, null, null, null, null);
         gcmNetworkManager.cancelAllTasks(MyTaskService.class);
-        showNotification("Logout", LoginActivity.class, false);
+        logHandler.showNotification("Logout", LoginActivity.class, false);
         startActivity(new Intent(MainActivity.this, LoginActivity.class));
         finish();
     }
 
     public void showMessage(String message) {
-        showNotification(message, MainActivity.class, false);
+        logHandler.showNotification(message, MainActivity.class, false);
         tvPrimaryText.setText(message);
     }
 
-    private void showNotification(String contentText, Class activity, boolean unDestroyable) {
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.cancel(mId);
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle("Proxy Login")
-                        .setContentText(contentText)
-                        .setOngoing(unDestroyable);
-// Creates an explicit intent for an Activity in your app
-        Intent resultIntent = new Intent(this, activity);
 
-// The stack builder object will contain an artificial back stack for the
-// started Activity.
-// This ensures that navigating backward from the Activity leads out of
-// your application to the Home screen.
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-// Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(activity);
-// Adds the Intent that starts the Activity to the top of the stack
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        mBuilder.setContentIntent(resultPendingIntent);
-
-// mId allows you to update the notification later on.
-        mNotificationManager.notify(mId, mBuilder.build());
-    }
 }

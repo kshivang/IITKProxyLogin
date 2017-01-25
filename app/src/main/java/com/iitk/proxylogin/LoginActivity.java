@@ -51,15 +51,19 @@ public class LoginActivity extends AppCompatActivity {
 
         logHandler = LogHandler.newInstance(this, new LogHandler.OnProgressListener() {
             @Override
-            public void onProgress() {
+            public void onProgress(String message) {
                 setProgress();
+                logHandler.showNotification(message, LoginActivity.class, false);
             }
 
             @Override
-            public void onFinish() {
+            public void onFinish(String message) {
                 finishProgress();
+                logHandler.showNotification(message, LoginActivity.class, false);
             }
         });
+
+        logHandler.showNotification("Require login", LoginActivity.class, false);
     }
 
     public void onLoginClick(View view) {

@@ -82,18 +82,19 @@ public class MyTaskService extends GcmTaskService {
                                         .getInstance().getTimeInMillis());
                                 return GcmNetworkManager.RESULT_SUCCESS;
                             } else {
-                                showNotification("Some Error Occurred!",
+                                showNotification(getString(R.string.some_error),
                                         MainActivity.class, false);
                                 onCancelAllTasks();
-                                localDatabase.setRefreshURL(localDatabase.getRefreshURL(), -1L);
+                                localDatabase.setBroadcastMessage(getString(R.string.some_error));
                                 return GcmNetworkManager.RESULT_FAILURE;
                             }
                         } catch (InterruptedException | ExecutionException |
                                 TimeoutException e) {
                             e.printStackTrace();
-                            showNotification("Some Error Occurred!", MainActivity.class,  false);
+                            showNotification(getString(R.string.some_error),
+                                    MainActivity.class,  false);
                             onCancelAllTasks();
-                            localDatabase.setRefreshURL(localDatabase.getRefreshURL(), -1L);
+                            localDatabase.setBroadcastMessage(getString(R.string.some_error));
                             return GcmNetworkManager.RESULT_FAILURE;
                         }
                     }
@@ -140,7 +141,7 @@ public class MyTaskService extends GcmTaskService {
         mNotificationManager.cancel(mId);
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setSmallIcon(R.drawable.black_logo)
                         .setContentTitle("Proxy Login")
                         .setContentText(contentText)
                         .setOngoing(unDestroyable);
