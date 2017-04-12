@@ -1,4 +1,4 @@
-package com.iitk.proxylogin;
+package com.iitk.proxyLogin;
 
 import android.content.Intent;
 import android.os.Bundle;

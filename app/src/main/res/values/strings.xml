@@ -15,4 +15,6 @@
     <string name="no_wifi_found">No wifi connection found!</string>
     <string name="some_error">Some error occurred!</string>
     <string name="logged_in">Logged in!</string>
+    <string name="lastLogin">lastLogin</string>
+    <string name="check_iitk_url">https://webmail1.iitk.ac.in/squirrelmail/</string>
 </resources>

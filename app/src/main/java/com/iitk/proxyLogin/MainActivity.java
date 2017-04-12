@@ -1,4 +1,4 @@
-package com.iitk.proxylogin;
+package com.iitk.proxyLogin;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -27,7 +27,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-import static com.iitk.proxylogin.R.string.some_error;
+import static com.iitk.proxyLogin.R.string.some_error;
 
 /**
  * Created by kshivang on 22/01/17.

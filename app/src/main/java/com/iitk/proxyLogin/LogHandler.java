@@ -1,4 +1,4 @@
-package com.iitk.proxylogin;
+package com.iitk.proxyLogin;
 
 import android.app.Activity;
 import android.app.NotificationManager;
@@ -22,7 +22,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.iitk.proxylogin.MyTaskService.mId;
+import static com.iitk.proxyLogin.MyTaskService.mId;
 
 /**
  * Created by kshivang on 26/01/17.
@@ -188,7 +188,6 @@ class LogHandler {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-
                         if (username != null) {
                             onPing(username, password);
                         } else {
