@@ -82,19 +82,25 @@ public class MyTaskService extends GcmTaskService {
                                         .getInstance().getTimeInMillis());
                                 return GcmNetworkManager.RESULT_SUCCESS;
                             } else {
-                                showNotification(getString(R.string.some_error),
-                                        MainActivity.class, false);
+                                showMessage(getString(R.string.some_error) + ": after response");
                                 onCancelAllTasks();
-                                localDatabase.setBroadcastMessage(getString(R.string.some_error));
                                 return GcmNetworkManager.RESULT_FAILURE;
                             }
-                        } catch (InterruptedException | ExecutionException |
-                                TimeoutException e) {
+                        } catch (InterruptedException e) {
                             e.printStackTrace();
-                            showNotification(getString(R.string.some_error),
-                                    MainActivity.class,  false);
+                            showMessage(getString(R.string.some_error) + ": in");
                             onCancelAllTasks();
-                            localDatabase.setBroadcastMessage(getString(R.string.some_error));
+                            return GcmNetworkManager.RESULT_FAILURE;
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                            showMessage(getString(R.string.some_error) + ": ex");
+                            onLogout();
+                            onCancelAllTasks();
+                            return GcmNetworkManager.RESULT_FAILURE;
+                        } catch (TimeoutException e) {
+                            e.printStackTrace();
+                            showMessage(getString(R.string.some_error) + ": ti");
+                            onCancelAllTasks();
                             return GcmNetworkManager.RESULT_FAILURE;
                         }
                     }
@@ -113,6 +119,52 @@ public class MyTaskService extends GcmTaskService {
         manager.sendBroadcast(intent);
 
         return result;
+    }
+
+    private void onLogout() {
+        onGetRequest(getString(R.string.logout_url), new NetworkCallback() {
+            @Override
+            public int onResponse(RequestFuture<String> future) {
+                try {
+                    String response = future.get(TIME_OUT, TimeUnit.SECONDS);
+                    onPing();
+                }catch (ExecutionException e) {
+                    e.printStackTrace();
+                    showMessage("Some error while logout ex");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    showMessage("Some error while logout in");
+                } catch (TimeoutException e) {
+                    e.printStackTrace();
+                    showMessage("Some error while logout ti");
+                }
+                return 0;
+            }
+        });
+    }
+
+    private void onPing() {
+
+        onGetRequest(getString(R.string.default_ping_url), new NetworkCallback() {
+            @Override
+            public int onResponse(RequestFuture<String> future) {
+                try {
+                    String response = future.get(TIME_OUT, TimeUnit.SECONDS);
+                    showMessage("You are not on iitk fortinet network");
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                    Log.e("My Task:onResponse: ", e.getMessage());
+                } catch (InterruptedException | TimeoutException e) {
+                    e.printStackTrace();
+                }
+                return 0;
+            }
+        });
+    }
+
+    private void showMessage(String message) {
+        showNotification(message, MainActivity.class, false);
+        localDatabase.setBroadcastMessage(message);
     }
 
     private void onCancelAllTasks() {
@@ -145,17 +197,11 @@ public class MyTaskService extends GcmTaskService {
                         .setContentTitle("Proxy Login")
                         .setContentText(contentText)
                         .setOngoing(unDestroyable);
-// Creates an explicit intent for an Activity in your app
+
         Intent resultIntent = new Intent(this, activity);
 
-// The stack builder object will contain an artificial back stack for the
-// started Activity.
-// This ensures that navigating backward from the Activity leads out of
-// your application to the Home screen.
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-// Adds the back stack for the Intent (but not the Intent itself)
         stackBuilder.addParentStack(activity);
-// Adds the Intent that starts the Activity to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(
@@ -164,7 +210,6 @@ public class MyTaskService extends GcmTaskService {
                 );
         mBuilder.setContentIntent(resultPendingIntent);
 
-// mId allows you to update the notification later on.
         mNotificationManager.notify(mId, mBuilder.build());
     }
 

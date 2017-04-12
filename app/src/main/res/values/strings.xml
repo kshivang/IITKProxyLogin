@@ -14,4 +14,5 @@
     <string name="refresh_current_session">Refreshing current session..</string>
     <string name="no_wifi_found">No wifi connection found!</string>
     <string name="some_error">Some error occurred!</string>
+    <string name="logged_in">Logged in!</string>
 </resources>

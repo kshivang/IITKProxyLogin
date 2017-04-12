@@ -36,4 +36,11 @@
         android:id="@+id/logout"
         android:onClick="onLogoutClick"
         />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="28dp"
+        android:gravity="center"
+        android:text="NOTE: Feel free to close the app. You can access always access app from notification tray"
+        />
 </LinearLayout>

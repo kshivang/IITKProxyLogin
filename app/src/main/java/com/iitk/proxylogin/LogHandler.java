@@ -142,7 +142,6 @@ class LogHandler {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        listener.onFinish("Logged in!");
                         String refreshURL = response.substring(response.indexOf(".href=\"") + 7,
                                 response.lastIndexOf("\";"));
                         Toast.makeText(mContext, "Fortinet Logged in!",

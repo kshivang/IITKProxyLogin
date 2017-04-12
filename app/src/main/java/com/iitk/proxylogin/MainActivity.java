@@ -66,7 +66,9 @@ public class MainActivity extends AppCompatActivity {
                             if (result == GcmNetworkManager.RESULT_SUCCESS) {
                                 timerStart();
                             } else {
-                                timer.cancel();
+                                if (timer != null) {
+                                    timer.cancel();
+                                }
                                 ConnectivityManager connManager = (ConnectivityManager)
                                         getSystemService(Context.CONNECTIVITY_SERVICE);
                                 NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
@@ -231,11 +233,13 @@ public class MainActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        gcmNetworkManager.cancelTask(TASK_TAG_REFRESH, MyTaskService.class);
+                        gcmNetworkManager.cancelAllTasks(MyTaskService.class);
                         ConnectivityManager connManager = (ConnectivityManager)
                                 getSystemService(Context.CONNECTIVITY_SERVICE);
                         NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
-                        timer.cancel();
+                        if (timer != null) {
+                            timer.cancel();
+                        }
                         if (activeNetwork != null && activeNetwork.getType() ==
                                 ConnectivityManager.TYPE_WIFI) {
                             onReLogin();

@@ -33,6 +33,7 @@ class UserLocalDatabase {
             spEditor.putString(KEY_USERNAME, username);
             spEditor.putString(KEY_PASSWORD, password);
             spEditor.putString(KEY_RESET_URL, resetUrl);
+            spEditor.putString(KEY_BROADCAST_MESSAGE, null);
             if (time != null)
                 spEditor.putLong(KEY_RESET_TIME, time);
         } else {
