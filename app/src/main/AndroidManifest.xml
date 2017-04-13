@@ -14,14 +14,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
-        <service
-            android:name="com.iitk.proxyLogin.MyTaskService"
-            android:exported="true"
-            android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">
-            <intent-filter>
-                <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY" />
-            </intent-filter>
-        </service>
+        <!--<service-->
+            <!--android:name="com.iitk.proxyLogin.MyTaskService"-->
+            <!--android:exported="true"-->
+            <!--android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="com.google.android.gms.gcm.ACTION_TASK_READY" />-->
+            <!--</intent-filter>-->
+        <!--</service>-->
         <activity
             android:name="com.iitk.proxyLogin.SplashActivity"
             android:screenOrientation="portrait">
@@ -31,12 +31,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name="com.iitk.proxyLogin.LoginActivity"
+        <!--<activity-->
+            <!--android:name="com.iitk.proxyLogin.LoginActivity"-->
+            <!--android:screenOrientation="portrait" />-->
+        <!--<activity-->
+            <!--android:name="com.iitk.proxyLogin.MainActivity"-->
+            <!--android:screenOrientation="portrait" />-->
+
+        <activity android:name=".SessionActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name="com.iitk.proxyLogin.MainActivity"
-            android:screenOrientation="portrait" />
+
         <service android:enabled="true"
             android:exported="false"
             android:name=".ProxyService"/>

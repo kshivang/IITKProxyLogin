@@ -36,7 +36,7 @@ public class MyTaskService extends GcmTaskService {
     final static int mId = 32;
 
     private VolleyController volleyController;
-    private UserLocalDatabase localDatabase;
+    private LocalDatabase localDatabase;
 
     final static int TIME_OUT = 10;
 
@@ -55,7 +55,7 @@ public class MyTaskService extends GcmTaskService {
     @Override
     public int onRunTask(TaskParams taskParams) {
         volleyController = VolleyController.getInstance(this);
-        localDatabase = new UserLocalDatabase(this);
+        localDatabase = new LocalDatabase(this);
         final String tag = taskParams.getTag();
 
         int result = GcmNetworkManager.RESULT_SUCCESS;

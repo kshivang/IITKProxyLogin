@@ -14,6 +14,17 @@
         style="@style/TopLogo"
         tools:ignore="ContentDescription" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:textSize="20sp"
+        android:id="@+id/primaryText"
+        />
+
     <android.support.design.widget.TextInputLayout
         android:id="@+id/userNameInput"
         app:errorTextAppearance="@style/error_appearance"
@@ -41,12 +52,6 @@
         android:text="@string/login"
         android:id="@+id/login"
         android:onClick="onLoginClick"
-        />
-
-    <Button
-        style="@style/SecondaryButton"
-        android:text="@string/logout_current_session"
-        android:onClick="onLogoutClick"
         />
 
     <ProgressBar

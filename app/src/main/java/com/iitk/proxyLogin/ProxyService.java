@@ -75,10 +75,26 @@ public class ProxyService extends Service {
                     break;
                 case 3:
                     handleFortinetLogin(msg.arg1, (Intent)msg.obj);
+                    break;
+                case 4:
+                    handleFortinetRefresh(msg.arg1, (Intent)msg.obj);
+                    break;
+                case 5:
+                    handleIronPortLogout(msg.arg1, (Intent)msg.obj);
+                    break;
+                case 6:
+                    handleIronPortLogin(msg.arg1, (Intent)msg.obj);
+                    break;
+                default:
+                    handleIronPortRefresh(msg.arg1, (Intent)msg.obj);
             }
         }
 
-        private void handleGetNetworkType(int startId, Intent intent) {
+        private void handleIronPortRefresh(int startId, Intent intent) {
+
+        }
+
+        private void handleGetNetworkType(final int startId, Intent intent) {
 
             ProxyApp.broadcastProgress("Looking for IITK network ...",
                     ProxyService.this.localBroadcastManager);
@@ -97,6 +113,7 @@ public class ProxyService extends Service {
                             ProxyApp.broadcastProgress("IITK ironport network found...",
                                     ProxyService.this.localBroadcastManager);
                             requestCredentials("ironport");
+                            stopSelf(startId);
                         }
                     }, new Response.ErrorListener() {
                         @Override
@@ -110,7 +127,8 @@ public class ProxyService extends Service {
                                 public void onResponse(String response) {
                                     ProxyApp.broadcastLiveSession(System.currentTimeMillis(),
                                             ProxyService.this.localBroadcastManager);
-                                    Log.i(TAG, "onResponse: in iitk fortinet continued");
+                                    Log.i(TAG, "onResponse: in iitk fortinet refreshed");
+                                    stopSelf(startId);
                                 }
                             }, new Response.ErrorListener() {
                                 @Override
@@ -119,6 +137,7 @@ public class ProxyService extends Service {
                                             ProxyService.this.localBroadcastManager);
                                     Log.i(TAG, "onResponse: in iitk fortinet need login");
                                     requestCredentials("fortinet");
+                                    stopSelf(startId);
                                 }
                             });
                         }
@@ -129,34 +148,75 @@ public class ProxyService extends Service {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     ProxyApp.broadcastNotIITK(localBroadcastManager);
+                    stopSelf(startId);
                 }
             });
         }
 
-        private void handleFortinetLogout (final int startId, Intent intent) {
+        private void handleFortinetLogout(final int startId, Intent intent) {
             onFortinetLogout(new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
+                    ProxyApp.broadcastProgress("IITK fortinet: Signed out.",
+                            ProxyService.this.localBroadcastManager);
                     Log.i(TAG, "onResponse: in iitk fortinet session logged out");
+                    requestCredentials("fortinet");
                     stopSelf(startId);
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     Log.i(TAG, "onResponse: in iitk fortinet session not present");
+                    ProxyApp.broadcastCheckSession(
+                            ProxyService.this.localBroadcastManager);
                     stopSelf(startId);
                 }
             });
         }
 
-        private void handleFortinetLogin(int arg1, Intent obj) {
+        private void handleFortinetLogin(int startId, Intent intent) {
 
+            stopSelf(startId);
+        }
+
+        private void handleIronPortLogout(int startId, Intent intent) {
+            //todo IronPort Logout to be implemented
+            ProxyApp.broadcastProgress("IITK fortinet: Signed out.",
+                    ProxyService.this.localBroadcastManager);
+            Log.i(TAG, "handleIronPortLogout: in iitk ironport session logged out");
+            requestCredentials("ironport");
+            stopSelf(startId);
+        }
+
+        private void handleIronPortLogin(int startId, Intent intent) {
+            stopSelf(startId);
+        }
+
+        private void handleFortinetRefresh (final int startId, Intent intent) {
+            onGet(getString(R.string.fortinet_keep_alive_url),
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            ProxyApp.broadcastLiveSession(System.currentTimeMillis(),
+                                    ProxyService.this.localBroadcastManager);
+                            Log.i(TAG, "onResponse: in iitk fortinet refreshed");
+                            stopSelf(startId);
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.i(TAG, "onResponse: in iitk fortinet need login");
+                            ProxyApp.broadcastCheckSession(
+                                    ProxyService.this.localBroadcastManager);
+                            stopSelf(startId);
+                        }
+                    });
         }
     }
 
     private void requestCredentials(String type) {
         SummaryNotification sn = new SummaryNotification(this.context,
-                "Need IITK credentials!", null, null, R.mipmap.ic_launcher, null);
+                "Need IITK credentials!", null, null, R.drawable.black_logo, null);
         Intent resultIntent = new Intent(ProxyService.this.context, LoginActivity.class);
         resultIntent.setAction(type);
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -197,13 +257,21 @@ public class ProxyService extends Service {
         msg.arg1 = startId;
         msg.obj = intent;
         if (intent.getAction().equals("proxy.service.NETWORK_TYPE")) {
-            if (intent.getBooleanExtra("Finish", false)) {
-                stopSelf(startId);
-                return Service.START_NOT_STICKY;
-            }
             msg.what = 1;
-            this.mServiceHandler.sendMessage(msg);
+        } else if (intent.getAction().equals("proxy.service.FORTINET_LOGOUT")) {
+            msg.what = 2;
+        } else if (intent.getAction().equals("proxy.service.FORTINET_LOGIN")) {
+            msg.what = 3;
+        } else if (intent.getAction().equals("proxy.service.FORTINET_REFRESH")){
+            msg.what = 4;
+        } else if (intent.getAction().equals("proxy.service.IRONPORT_LOGOUT")) {
+            msg.what = 5;
+        } else if (intent.getAction().equals("proxy.service.IRONPORT_LOGIN")){
+            msg.what = 6;
+        } else {
+            msg.what = 7;
         }
+        this.mServiceHandler.sendMessage(msg);
         return Service.START_REDELIVER_INTENT;
     }
 }

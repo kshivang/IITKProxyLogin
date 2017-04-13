@@ -37,7 +37,7 @@ import static com.iitk.proxyLogin.R.string.some_error;
 public class MainActivity extends AppCompatActivity {
 
     private TextView tvPrimaryText;
-    private UserLocalDatabase localDatabase;
+    private LocalDatabase localDatabase;
     private VolleyController volleyController;
     private LogHandler logHandler;
 
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-        localDatabase = new UserLocalDatabase(MainActivity.this);
+        localDatabase = new LocalDatabase(MainActivity.this);
         volleyController = VolleyController.getInstance(MainActivity.this);
 
         logHandler = LogHandler.newInstance(this, new LogHandler.OnProgressListener() {

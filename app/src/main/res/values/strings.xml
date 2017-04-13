@@ -17,6 +17,6 @@
     <string name="logged_in">Logged in!</string>
     <string name="lastLogin">lastLogin</string>
     <string name="check_iitk_url">https://webmail1.iitk.ac.in/squirrelmail/</string>
-    <string name="check_iron_port_url">http://gateway.iitk.ac.in:1003</string>
+    <string name="check_iron_port_url">http://authenticate.iitk.ac.in/netaccess/connstatus.html</string>
     <string name="fortinet_keep_alive_url">https://gateway.iitk.ac.in:1003/keepalive?0f0103060f243720</string>
 </resources>

@@ -1,11 +1,7 @@
 package com.iitk.proxyLogin;
 
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Process;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -13,8 +9,6 @@ import android.util.Log;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
-
-import java.util.List;
 
 /**
  * Created by kshivang on 12/04/17.
@@ -26,6 +20,7 @@ public class ProxyApp extends Application {
     public static final String TAG = ProxyApp.class.getSimpleName();
     private static ProxyApp mInstance;
     private static RequestQueue mRequestQueue;
+    private static LocalDatabase localDatabase;
 
 
     public static synchronized ProxyApp getInstance() {
@@ -40,27 +35,28 @@ public class ProxyApp extends Application {
     public void onCreate() {
         super.onCreate();
         mInstance = this;
-        if (!isBackgroundProcess()) {
-
-        }
+        localDatabase = new LocalDatabase(this);
+//        if (!isBackgroundProcess()) {
+//
+//        }
     }
 
-    private boolean isBackgroundProcess() {
-        String currentProcessName = BuildConfig.VERSION_NAME;
-        int pid = Process.myPid();
-        List<RunningAppProcessInfo> runningProcessInfo =
-                ((ActivityManager) getSystemService(Context.ACTIVITY_SERVICE))
-                        .getRunningAppProcesses();
-        if (!(runningProcessInfo == null || runningProcessInfo.isEmpty())) {
-            for (RunningAppProcessInfo processInfo : runningProcessInfo) {
-                if (processInfo.pid == pid) {
-                    currentProcessName = processInfo.processName;
-                    break;
-                }
-            }
-        }
-        return currentProcessName.contains("background");
-    }
+//    private boolean isBackgroundProcess() {
+//        String currentProcessName = BuildConfig.VERSION_NAME;
+//        int pid = Process.myPid();
+//        List<RunningAppProcessInfo> runningProcessInfo =
+//                ((ActivityManager) getSystemService(Context.ACTIVITY_SERVICE))
+//                        .getRunningAppProcesses();
+//        if (!(runningProcessInfo == null || runningProcessInfo.isEmpty())) {
+//            for (RunningAppProcessInfo processInfo : runningProcessInfo) {
+//                if (processInfo.pid == pid) {
+//                    currentProcessName = processInfo.processName;
+//                    break;
+//                }
+//            }
+//        }
+//        return currentProcessName.contains("background");
+//    }
 
     public RequestQueue getRequestQueue() {
         if (mRequestQueue == null) {
@@ -84,37 +80,33 @@ public class ProxyApp extends Application {
         }
     }
 
-//    public static void broadcastRequestComplete(
-//            LocalBroadcastManager localBroadcastManager) {
-//        localBroadcastManager.sendBroadcast(
-//                new Intent("proxy.app.PROXY_UPDATE_INSIGHTS"));
-//    }
-//
-//    public static void broadcastNewLogin(
-//            LocalBroadcastManager localBroadcastManager) {
-//        localBroadcastManager.sendBroadcast(
-//                new Intent("proxy.app.PROXY_NEW_LOGIN"));
-//    }
-
     public static void broadcastProgress(String progress,
             LocalBroadcastManager localBroadcastManager) {
-        localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_NEW_LOGIN_PROGRESS")
+        localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_PROGRESS")
                 .putExtra("Progress", progress));
     }
 
     public static void broadcastRequestCredential(String type,
             LocalBroadcastManager localBroadcastManager) {
+        localDatabase.setLastIdentified(type);
         localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_REQUEST_CREDENTIAL")
                 .putExtra("Type", type));
     }
 
     public static void broadcastNotIITK(LocalBroadcastManager localBroadcastManager) {
+        localDatabase.setLastIdentified("non IITK");
         localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_NOT_IITK"));
     }
 
-    public static void broadcastLiveSession(long currentTimeMillis,
+    public static void broadcastLiveSession(long lastLogin,
                                             LocalBroadcastManager localBroadcastManager) {
+        localDatabase.setRefreshURL(
+                "https://gateway.iitk.ac.in:1003/keepalive?0f0103060f243720", lastLogin);
         localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_LIVE_SESSION")
-                .putExtra("Time", currentTimeMillis));
+                .putExtra("Time", lastLogin));
+    }
+
+    public static void broadcastCheckSession(LocalBroadcastManager localBroadcastManager) {
+        localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_CHECK_SESSION"));
     }
 }

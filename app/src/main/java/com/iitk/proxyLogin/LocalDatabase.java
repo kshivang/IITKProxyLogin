@@ -9,7 +9,7 @@ import android.support.compat.BuildConfig;
  * Created by kshivang on 22/01/17.
  */
 
-class UserLocalDatabase {
+class LocalDatabase {
 
     private SharedPreferences userLocalDatabase;
     private static final String KEY_LOGIN = "l";
@@ -18,10 +18,13 @@ class UserLocalDatabase {
     private static final String KEY_RESET_URL = "r";
     private static final String KEY_RESET_TIME = "t";
     private static final String KEY_BROADCAST_MESSAGE = "m";
+    private static final String KEY_LAST_IDENTIFIED = "i";
+    private Context mContext;
 
-    UserLocalDatabase(Context context) {
+    LocalDatabase(Context context) {
         userLocalDatabase = context.getSharedPreferences(BuildConfig.APPLICATION_ID,
                 Context.MODE_PRIVATE);
+        mContext = context;
     }
 
     void setLogin(boolean logStatus, @Nullable String username,
@@ -54,7 +57,8 @@ class UserLocalDatabase {
     }
 
     String getRefreshURL() {
-        return userLocalDatabase.getString(KEY_RESET_URL, "");
+        return userLocalDatabase.getString(KEY_RESET_URL, mContext
+                .getString(R.string.fortinet_keep_alive_url));
     }
 
     long getRefreshTime() {
@@ -62,11 +66,11 @@ class UserLocalDatabase {
     }
 
     String getUsername() {
-        return userLocalDatabase.getString(KEY_USERNAME, "");
+        return userLocalDatabase.getString(KEY_USERNAME, null);
     }
 
     String getPassword() {
-        return userLocalDatabase.getString(KEY_PASSWORD, "");
+        return userLocalDatabase.getString(KEY_PASSWORD, null);
     }
 
     void setBroadcastMessage(@Nullable String message) {
@@ -77,6 +81,14 @@ class UserLocalDatabase {
 
     String getBroadcastMessage() {
         return userLocalDatabase.getString(KEY_BROADCAST_MESSAGE, null);
+    }
+
+    void setLastIdentified(String type) {
+        userLocalDatabase.edit().putString(KEY_LAST_IDENTIFIED, type).apply();
+    }
+
+    String getLastIdentified() {
+        return userLocalDatabase.getString(KEY_LAST_IDENTIFIED, "non IITK");
     }
 
     boolean isLogin() {

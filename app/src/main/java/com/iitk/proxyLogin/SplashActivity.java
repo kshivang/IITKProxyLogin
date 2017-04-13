@@ -25,24 +25,27 @@ public class SplashActivity extends AppCompatActivity {
     private boolean isAnimationFinished = false;
     private TextView tvProgress;
     private LocalBroadcastManager localBroadcastManager;
+    private LocalDatabase localDatabase;
+
     private final BroadcastReceiver proxyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if ("proxy.app.PROXY_NEW_LOGIN_PROGRESS".equals(intent.getAction())) {
+            if ("proxy.app.PROXY_PROGRESS".equals(intent.getAction())) {
                 tvProgress.setText(intent.getStringExtra("Progress"));
             } else if ("proxy.app.PROXY_REQUEST_CREDENTIAL".equals(intent.getAction())) {
-                tvProgress.setText("You are on IITK " + intent.getStringExtra("Type") +
-                        " network");
-                onFetched();
+                String type = intent.getStringExtra("Type");
+                tvProgress.setText("You are on IITK " + type + " network");
+                onFetched(true);
             } else if ("proxy.app.PROXY_LIVE_SESSION".equals(intent.getAction())) {
+                long lastLogin = intent.getLongExtra("Time",
+                                        System.currentTimeMillis());
                 tvProgress.setText("IITK Fortinet refreshed at " +
                         new SimpleDateFormat("HH:mm a", Locale.ENGLISH)
-                                .format(new Date(intent.getLongExtra("Time",
-                                        System.currentTimeMillis()))));
-                onFetched();
+                                .format(new Date(lastLogin)));
+                onFetched(false);
             } else {
                 tvProgress.setText("You are not on IITK network");
-                onFetched();
+                onFetched(false);
             }
         }
     };
@@ -53,9 +56,11 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        localDatabase = new LocalDatabase(this);
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
         localBroadcastManager.registerReceiver(proxyReceiver, makeProxyUpdatesIntentFilter());
-        getType();
+
+        fetchType();
 
         Animation bounceAnim = AnimationUtils
                 .loadAnimation(getApplicationContext(), R.anim.bounce);
@@ -72,7 +77,7 @@ public class SplashActivity extends AppCompatActivity {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-//                animationsFinished();
+                isAnimationFinished = true;
             }
 
             @Override
@@ -82,26 +87,15 @@ public class SplashActivity extends AppCompatActivity {
         });
     }
 
-    private void getType() {
-
+    private void fetchType() {
         Intent proxyServiceIntent = new Intent(this, ProxyService.class);
         proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
-        proxyServiceIntent.putExtra("Finish", false);
         startService(proxyServiceIntent);
     }
 
-    private void onFetched() {
-        Intent proxyServiceIntent = new Intent(this, ProxyService.class);
-        proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
-        proxyServiceIntent.putExtra("Finish", true);
-        startService(proxyServiceIntent);
-    }
-
-    private void animationsFinished() {
-        isAnimationFinished = true;
-        UserLocalDatabase localDatabase = new UserLocalDatabase(SplashActivity.this);
-        startActivity(new Intent(SplashActivity.this, localDatabase.isLogin() ?
-                MainActivity.class : LoginActivity.class));
+    private void onFetched(boolean isLoginRequired) {
+        startActivity(new Intent(SplashActivity.this, isLoginRequired ?
+                LoginActivity.class : SessionActivity.class));
     }
 
     @Override
@@ -122,7 +116,7 @@ public class SplashActivity extends AppCompatActivity {
 
     public static IntentFilter makeProxyUpdatesIntentFilter() {
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("proxy.app.PROXY_NEW_LOGIN_PROGRESS");
+        intentFilter.addAction("proxy.app.PROXY_PROGRESS");
         intentFilter.addAction("proxy.app.PROXY_REQUEST_CREDENTIAL");
         intentFilter.addAction("proxy.app.PROXY_NOT_IITK");
         intentFilter.addAction("proxy.app.PROXY_LIVE_SESSION");

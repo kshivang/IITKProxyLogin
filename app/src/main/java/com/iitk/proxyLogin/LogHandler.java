@@ -34,7 +34,7 @@ class LogHandler {
     private Context mContext;
     private OnProgressListener listener;
     private VolleyController volleyController;
-    private UserLocalDatabase localDatabase;
+    private LocalDatabase localDatabase;
 
 
     static LogHandler newInstance(Context context, OnProgressListener listener) {
@@ -45,7 +45,7 @@ class LogHandler {
         mContext = context;
         listener = onProgress;
         volleyController = VolleyController.getInstance(context);
-        localDatabase = new UserLocalDatabase(context);
+        localDatabase = new LocalDatabase(context);
     }
 
     interface OnProgressListener {
