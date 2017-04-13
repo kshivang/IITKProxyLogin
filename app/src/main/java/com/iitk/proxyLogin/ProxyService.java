@@ -69,8 +69,10 @@ public class ProxyService extends Service {
             switch (msg.what) {
                 case 1:
                     handleGetNetworkType(msg.arg1, (Intent)msg.obj);
+                    break;
                 case 2:
                     handleFortinetLogout(msg.arg1, (Intent)msg.obj);
+                    break;
                 case 3:
                     handleFortinetLogin(msg.arg1, (Intent)msg.obj);
             }
@@ -108,12 +110,14 @@ public class ProxyService extends Service {
                                 public void onResponse(String response) {
                                     ProxyApp.broadcastLiveSession(System.currentTimeMillis(),
                                             ProxyService.this.localBroadcastManager);
+                                    Log.i(TAG, "onResponse: in iitk fortinet continued");
                                 }
                             }, new Response.ErrorListener() {
                                 @Override
                                 public void onErrorResponse(VolleyError error) {
                                     ProxyApp.broadcastProgress("IITK fortinet: Signed out.",
                                             ProxyService.this.localBroadcastManager);
+                                    Log.i(TAG, "onResponse: in iitk fortinet need login");
                                     requestCredentials("fortinet");
                                 }
                             });
