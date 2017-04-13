@@ -84,15 +84,37 @@ public class ProxyApp extends Application {
         }
     }
 
-    public static void broadcastRequestComplete(
+//    public static void broadcastRequestComplete(
+//            LocalBroadcastManager localBroadcastManager) {
+//        localBroadcastManager.sendBroadcast(
+//                new Intent("proxy.app.PROXY_UPDATE_INSIGHTS"));
+//    }
+//
+//    public static void broadcastNewLogin(
+//            LocalBroadcastManager localBroadcastManager) {
+//        localBroadcastManager.sendBroadcast(
+//                new Intent("proxy.app.PROXY_NEW_LOGIN"));
+//    }
+
+    public static void broadcastProgress(String progress,
             LocalBroadcastManager localBroadcastManager) {
-        localBroadcastManager.sendBroadcast(
-                new Intent("ProxyLogin.app.PROXY_UPDATE_INSIGHTS"));
+        localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_NEW_LOGIN_PROGRESS")
+                .putExtra("Progress", progress));
     }
 
-    public static void broadcastNewLogin(
+    public static void broadcastRequestCredential(String type,
             LocalBroadcastManager localBroadcastManager) {
-        localBroadcastManager.sendBroadcast(
-                new Intent("ProxyLogin.app.PROXY_NEW_LOGIN"));
+        localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_REQUEST_CREDENTIAL")
+                .putExtra("Type", type));
+    }
+
+    public static void broadcastNotIITK(LocalBroadcastManager localBroadcastManager) {
+        localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_NOT_IITK"));
+    }
+
+    public static void broadcastLiveSession(long currentTimeMillis,
+                                            LocalBroadcastManager localBroadcastManager) {
+        localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_LIVE_SESSION")
+                .putExtra("Time", currentTimeMillis));
     }
 }
