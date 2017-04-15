@@ -50,14 +50,6 @@ public class SessionActivity extends AppCompatActivity{
                     localDatabase.setLogin(null, null);
                     onFetched(true);
                     break;
-                case "proxy.app.WIFI_STATE_CHANGE":
-                    if (localDatabase.isWifiPresent()){
-                        enableButtons(true);
-                        tvProgress.setText("Wifi connection found");
-                    } else {
-                        enableButtons(true);
-                        tvProgress.setText("No wifi connection found");
-                    }
                 default:
                     onFetched(false);
             }
@@ -69,7 +61,6 @@ public class SessionActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         localDatabase = new LocalDatabase(this);
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
-        localBroadcastManager.registerReceiver(proxyReceiver, makeProxyUpdatesIntentFilter());
 
         setContentView(R.layout.activity_session);
         tvProgress = (TextView) findViewById(R.id.primaryText);
@@ -80,11 +71,17 @@ public class SessionActivity extends AppCompatActivity{
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         if (this.localBroadcastManager != null) {
             localBroadcastManager.unregisterReceiver(proxyReceiver);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        localBroadcastManager.registerReceiver(proxyReceiver, makeProxyUpdatesIntentFilter());
     }
 
     @Override
@@ -100,27 +97,33 @@ public class SessionActivity extends AppCompatActivity{
 
     void onRefreshUI(String lastIdentified) {
         enableButtons(true);
-        switch (lastIdentified) {
-            case "fortinet":
-                Toast.makeText(this, "Fortinet session refreshed!", Toast.LENGTH_SHORT).show();
-                btLogout.setVisibility(View.VISIBLE);
-                tvProgress.setText("IITK fortinet network: will refresh at " +
-                        new SimpleDateFormat("HH:mm a", Locale.ENGLISH)
-                                .format(localDatabase.getNextRefreshTime()));
+        if (localDatabase.isWifiPresent()) {
+            switch (lastIdentified) {
+                case "fortinet":
+                    Toast.makeText(this, "Fortinet session refreshed!", Toast.LENGTH_SHORT).show();
+                    btLogout.setVisibility(View.VISIBLE);
+                    tvProgress.setText("IITK fortinet network: will refresh at " +
+                            new SimpleDateFormat("HH:mm a", Locale.ENGLISH)
+                                    .format(localDatabase.getNextRefreshTime()));
 
-                break;
-            case "ironport":
-                Toast.makeText(this, "Ironport session refreshed!", Toast.LENGTH_SHORT).show();
-                btLogout.setVisibility(View.VISIBLE);
-                tvProgress.setText("IITK ironport network: will refresh at " +
-                        new SimpleDateFormat("HH:mm a", Locale.ENGLISH)
-                                .format(localDatabase.getNextRefreshTime()));
-                break;
-            default:
-                tvProgress.setText("Your are not on IITK network");
-                btLogout.setVisibility(View.INVISIBLE);
-                break;
+                    break;
+                case "ironport":
+                    Toast.makeText(this, "Ironport session refreshed!", Toast.LENGTH_SHORT).show();
+                    btLogout.setVisibility(View.VISIBLE);
+                    tvProgress.setText("IITK ironport network: will refresh at " +
+                            new SimpleDateFormat("HH:mm a", Locale.ENGLISH)
+                                    .format(localDatabase.getNextRefreshTime()));
+                    break;
+                default:
+                    tvProgress.setText("You are not on IITK network");
+                    btLogout.setVisibility(View.INVISIBLE);
+                    break;
+            }
+        } else {
+//            enableButtons(false);
+            tvProgress.setText("No wifi connection found!");
         }
+
     }
 
     private void onFetched(boolean isLoginRequired) {
@@ -138,6 +141,8 @@ public class SessionActivity extends AppCompatActivity{
                         break;
                     case "ironport":
                         proxyServiceIntent.setAction("porxy.service.IRONPORT_LOGIN");
+                        proxyServiceIntent.putExtra("username", localDatabase.getUsername());
+                        proxyServiceIntent.putExtra("password", localDatabase.getPassword());
                         break;
                     default:
                         proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");

@@ -148,7 +148,7 @@ public class ProxyApp extends Application {
         mInstance.startService(proxyServiceIntent);
 
         SummaryNotification sn = new SummaryNotification(mInstance,
-                "Logged in to IITK " + localDatabase.getLastIdentified() + "network", null, null,
+                "Logged in to IITK " + localDatabase.getLastIdentified() + " network", null, null,
                 R.drawable.black_logo, null);
         Intent resultIntent = new Intent(mInstance, SessionActivity.class);
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -180,6 +180,7 @@ public class ProxyApp extends Application {
     public static void broadcastIncorrectPassword(LocalBroadcastManager localBroadcastManager) {
         SummaryNotification sn = new SummaryNotification(mInstance,
                 "Incorrect credentials!", null, null, R.drawable.black_logo, null);
+
         Intent resultIntent = new Intent(mInstance, LoginActivity.class);
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingIntent = TaskStackBuilder.create(mInstance)
@@ -191,18 +192,42 @@ public class ProxyApp extends Application {
         sn.addAction(R.drawable.ic_login, "login", pendingIntent);
         sn.setTag(TAG);
         sn.show();
-
         localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_INCORRECT_PASSWORD"));
     }
 
     public static void broadcastWifiChange(LocalBroadcastManager localBroadcastManager) {
-        LocalDatabase localDatabase = new LocalDatabase(mInstance);
-        if (localDatabase.isWifiPresent()) {
-            Intent proxyServiceIntent = new Intent(mInstance,
-                    ProxyService.class);
-            proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
-            mInstance.startService(proxyServiceIntent);
+
+        if (new LocalDatabase(mInstance).isWifiPresent()) {
+            broadcastProgress(null, "Wifi connection found", localBroadcastManager);
+
+            SummaryNotification sn = new SummaryNotification(mInstance,
+                    "Wifi connection found", null, null,
+                    R.drawable.black_logo, null);
+            Intent resultIntent = new Intent(mInstance, SessionActivity.class);
+            resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = TaskStackBuilder.create(mInstance)
+                    .addNextIntentWithParentStack(resultIntent).getPendingIntent(1001,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+            sn.setNotificationId(1001);
+            sn.setContentIntent(pendingIntent);
+            sn.mBuilder.setOngoing(true);
+            sn.setTag(TAG);
+            sn.show();
+        } else {
+            broadcastProgress(null, "Wifi connection not found", localBroadcastManager);
+            SummaryNotification sn = new SummaryNotification(mInstance,
+                    "No wifi connection found", null, null,
+                    R.drawable.black_logo, null);
+            Intent resultIntent = new Intent(mInstance, SessionActivity.class);
+            resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = TaskStackBuilder.create(mInstance)
+                    .addNextIntentWithParentStack(resultIntent).getPendingIntent(1001,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+            sn.setNotificationId(1001);
+            sn.setContentIntent(pendingIntent);
+            sn.mBuilder.setOngoing(true);
+            sn.setTag(TAG);
+            sn.show();
         }
-        localBroadcastManager.sendBroadcast(new Intent("proxy.app.WIFI_STATE_CHANGE"));
     }
 }

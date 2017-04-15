@@ -5,8 +5,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -111,8 +109,15 @@ public class ProxyService extends Service {
         }
 
         private void handleWifiChange(int startId, Intent intent) {
+            Log.i(TAG, "handleWifiChange: " + localDatabase.isWifiPresent());
             ProxyApp.broadcastWifiChange(localBroadcastManager);
+            if (localDatabase.isWifiPresent()) {
+                long currentTime = System.currentTimeMillis();
+                localDatabase.setRefreshTime(currentTime + 5000, currentTime);
+                handleSetupAlarm(startId, intent);
+            }
             stopSelf(startId);
+            WakefulBroadcastReceiver.completeWakefulIntent(intent);
         }
 
         private void handleAlarmAction(int startId, Intent intent) {
@@ -357,7 +362,7 @@ public class ProxyService extends Service {
 
     private void onGet(String url, Response.Listener<String> onResponse,
                        Response.ErrorListener onError) {
-        if (isWifiPresent()) {
+        if (localDatabase.isWifiPresent()) {
             proxyApp.addToRequestQueue(new StringRequest(Request.Method.GET,
                     url, onResponse, onError), TAG);
         } else {
@@ -368,7 +373,7 @@ public class ProxyService extends Service {
     private void onPost(String url, Response.Listener<String> onResponse,
                          Response.ErrorListener onError,
                         final Map<String, String> params) {
-        if (isWifiPresent()) {
+        if (localDatabase.isWifiPresent()) {
             proxyApp.addToRequestQueue(
                     new StringRequest(Request.Method.POST, url, onResponse, onError) {
                         @Override
@@ -383,18 +388,8 @@ public class ProxyService extends Service {
         }
     }
 
-    private boolean isWifiPresent() {
-        ConnectivityManager conMan = (ConnectivityManager) context
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo netInfo = conMan.getActiveNetworkInfo();
-        if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
-            Log.d(TAG, "Have Wifi Connection");
-            localDatabase.setWifiState(true);
-            return true;
-        } else {
-            localDatabase.setWifiState(false);
-            return false;
-        }
+    private boolean checkWifiPresent() {
+        return true;
     }
 
     @Nullable

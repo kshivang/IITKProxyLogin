@@ -97,8 +97,8 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         if (this.localBroadcastManager != null) {
             localBroadcastManager.unregisterReceiver(proxyReceiver);
         }
@@ -107,10 +107,12 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        localBroadcastManager.registerReceiver(proxyReceiver, makeProxyUpdatesIntentFilter());
         if (isAnimationFinished) {
             finish();
         }
     }
+
 
     public static IntentFilter makeProxyUpdatesIntentFilter() {
         IntentFilter intentFilter = new IntentFilter();
@@ -118,6 +120,7 @@ public class SplashActivity extends AppCompatActivity {
         intentFilter.addAction("proxy.app.PROXY_REQUEST_CREDENTIAL");
         intentFilter.addAction("proxy.app.PROXY_NOT_IITK");
         intentFilter.addAction("proxy.app.PROXY_LIVE_SESSION");
+        intentFilter.addAction("proxy.app.NO_WIFI");
         return intentFilter;
     }
 }

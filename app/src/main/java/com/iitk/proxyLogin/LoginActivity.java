@@ -116,12 +116,19 @@ public class LoginActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
+
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    protected void onPause() {
+        super.onPause();
         if (this.localBroadcastManager != null) {
             localBroadcastManager.unregisterReceiver(proxyReceiver);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        localBroadcastManager.registerReceiver(proxyReceiver, makeProxyUpdatesIntentFilter());
     }
 
     public void onLoginClick(View view) {

@@ -22,6 +22,7 @@ class LocalDatabase {
     private static final String KEY_FORTINET_UPDATE = "fu";
     private static final String KEY_IRONPORT_UPDATE = "iu";
     private static final String KEY_WIFI_STATE = "ws";
+    private static final String KEY_WIFI_STATE_INTENT = "wsi";
     private Context mContext;
 
     LocalDatabase(Context context) {
