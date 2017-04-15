@@ -45,10 +45,10 @@ public class SessionActivity extends AppCompatActivity{
                     break;
                 case "proxy.app.PROXY_CHECK_SESSION":
                     tvProgress.setText("retrying..");
-                    Intent proxyServiceIntent = new Intent(SessionActivity.this,
-                            ProxyService.class);
-                    proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
-                    startService(proxyServiceIntent);
+//                    Intent proxyServiceIntent = new Intent(SessionActivity.this,
+//                            ProxyService.class);
+//                    proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
+//                    startService(proxyServiceIntent);
                     break;
                 case "proxy.app.PROXY_INCORRECT_PASSWORD":
                     localDatabase.setLogin(null, null);
@@ -102,14 +102,15 @@ public class SessionActivity extends AppCompatActivity{
                 btLogout.setVisibility(View.VISIBLE);
                 tvProgress.setText("IITK fortinet network: will refresh at " +
                         new SimpleDateFormat("HH:mm a", Locale.ENGLISH)
-                                .format(localDatabase.getRefreshTime() + 240000));
+                                .format(localDatabase.getNextRefreshTime()));
+
                 break;
             case "ironport":
                 Toast.makeText(this, "Ironport session refreshed!", Toast.LENGTH_SHORT).show();
                 btLogout.setVisibility(View.VISIBLE);
                 tvProgress.setText("IITK ironport network: will refresh at " +
                         new SimpleDateFormat("HH:mm a", Locale.ENGLISH)
-                                .format(localDatabase.getRefreshTime() + 600000));
+                                .format(localDatabase.getNextRefreshTime()));
                 break;
             default:
                 tvProgress.setText("Your are not on IITK network");

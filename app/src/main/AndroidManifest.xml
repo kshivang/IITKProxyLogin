@@ -5,6 +5,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <application
         android:name=".ProxyApp"
@@ -14,14 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
-        <!--<service-->
-            <!--android:name="com.iitk.proxyLogin.MyTaskService"-->
-            <!--android:exported="true"-->
-            <!--android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="com.google.android.gms.gcm.ACTION_TASK_READY" />-->
-            <!--</intent-filter>-->
-        <!--</service>-->
+        <receiver android:name=".AlarmReceiver"/>
         <activity
             android:name="com.iitk.proxyLogin.SplashActivity"
             android:launchMode="singleTop"
@@ -36,15 +30,10 @@
             android:name="com.iitk.proxyLogin.LoginActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" />
-        <!--<activity-->
-            <!--android:name="com.iitk.proxyLogin.MainActivity"-->
-            <!--android:screenOrientation="portrait" />-->
-
         <activity android:name=".SessionActivity"
             android:screenOrientation="portrait"
             android:launchMode="singleTop"
             />
-
         <service android:enabled="true"
             android:exported="false"
             android:name=".ProxyService"/>

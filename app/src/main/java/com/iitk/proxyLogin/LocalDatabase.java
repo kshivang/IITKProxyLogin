@@ -12,13 +12,15 @@ import android.support.compat.BuildConfig;
 class LocalDatabase {
 
     private SharedPreferences userLocalDatabase;
-    private static final String KEY_LOGIN = "l";
     private static final String KEY_USERNAME = "u";
     private static final String KEY_PASSWORD = "p";
     private static final String KEY_RESET_URL = "r";
     private static final String KEY_RESET_TIME = "t";
+    private static final String KEY_NEXT_RESET_TIME = "n";
     private static final String KEY_BROADCAST_MESSAGE = "m";
     private static final String KEY_LAST_IDENTIFIED = "i";
+    private static final String KEY_FORTINET_UPDATE = "fu";
+    private static final String KEY_IRONPORT_UPDATE = "iu";
     private Context mContext;
 
     LocalDatabase(Context context) {
@@ -34,11 +36,10 @@ class LocalDatabase {
         spEditor.apply();
     }
 
-    void setRefreshURL(String refreshURL, Long resetTime) {
+    void setRefreshTime(Long nextResetTime, Long resetTime) {
         SharedPreferences.Editor spEditor = userLocalDatabase.edit();
-        spEditor.putString(KEY_RESET_URL, refreshURL);
+        spEditor.putLong(KEY_NEXT_RESET_TIME, nextResetTime);
         spEditor.putLong(KEY_RESET_TIME, resetTime);
-        spEditor.putString(KEY_BROADCAST_MESSAGE, null);
         spEditor.apply();
     }
 
@@ -49,6 +50,10 @@ class LocalDatabase {
 
     long getRefreshTime() {
         return userLocalDatabase.getLong(KEY_RESET_TIME, -1L);
+    }
+
+    long getNextRefreshTime() {
+        return userLocalDatabase.getLong(KEY_NEXT_RESET_TIME, -1L);
     }
 
     String getUsername() {
@@ -77,8 +82,11 @@ class LocalDatabase {
         return userLocalDatabase.getString(KEY_LAST_IDENTIFIED, "non IITK");
     }
 
-    boolean isLogin() {
-        return userLocalDatabase.getBoolean(KEY_LOGIN, false);
+    long getIronPortRefresh() {
+        return userLocalDatabase.getLong(KEY_IRONPORT_UPDATE, 10 * 60000);
     }
 
+    long getFortinetRefresh() {
+        return userLocalDatabase.getLong(KEY_FORTINET_UPDATE, 2 * 60000);
+    }
 }

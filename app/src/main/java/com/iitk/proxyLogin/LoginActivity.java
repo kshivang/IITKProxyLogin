@@ -49,10 +49,6 @@ public class LoginActivity extends AppCompatActivity {
                     break;
                 case "proxy.app.PROXY_CHECK_SESSION":
                     tvProgress.setText("retrying..");
-                    Intent proxyServiceIntent = new Intent(LoginActivity.this,
-                            ProxyService.class);
-                    proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
-                    startService(proxyServiceIntent);
                     break;
                 case "proxy.app.PROXY_INCORRECT_PASSWORD":
                     onIncorrectPassword();
@@ -62,9 +58,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
     };
-
-//    private boolean isClicked = false;
-//    private LogHandler logHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,21 +94,6 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
         }
-//        logHandler = LogHandler.newInstance(this, new LogHandler.OnProgressListener() {
-//            @Override
-//            public void onProgress(String message) {
-//                setProgress();
-//                logHandler.showNotification(message, LoginActivity.class, false);
-//            }
-//
-//            @Override
-//            public void onFinish(String message) {
-//                finishProgress();
-//                logHandler.showNotification(message, LoginActivity.class, false);
-//            }
-//        });
-//
-//        logHandler.showNotification("Require login", LoginActivity.class, false);
     }
 
     @Override
@@ -139,14 +117,11 @@ public class LoginActivity extends AppCompatActivity {
 
     public void onLoginClick(View view) {
         hideKeyBoard(view);
-//        if (!isClicked) {
         EditText etUserName = tilUserName.getEditText();
         EditText etPassword = tilPassword.getEditText();
         if (etUserName != null && etPassword != null &&
                 !TextUtils.isEmpty(etUserName.getText())
                 && !TextUtils.isEmpty(etPassword.getText())) {
-//                logHandler.onLog(etUserName.getText().toString(),
-//                        etPassword.getText().toString());
             btLogin.setEnabled(false);
             progressBar.setVisibility(View.VISIBLE);
             Intent proxyServiceIntent = new Intent(this,
@@ -164,14 +139,12 @@ public class LoginActivity extends AppCompatActivity {
                     proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
             }
             startService(proxyServiceIntent);
-
         } else {
             btLogin.setEnabled(true);
             progressBar.setVisibility(View.GONE);
             Toast.makeText(this, "Username and Password are required fields!",
                     Toast.LENGTH_SHORT).show();
         }
-//        }
     }
 
     private void onFetched(boolean isLoginRequired) {

@@ -1,5 +1,6 @@
 package com.iitk.proxyLogin;
 
+import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -11,8 +12,8 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
@@ -37,6 +38,7 @@ public class ProxyService extends Service {
     private LocalBroadcastManager localBroadcastManager;
     private ProxyServiceHandler mServiceHandler;
     private ProxyApp proxyApp;
+    private LocalDatabase localDatabase;
     private Context context;
 
     public ProxyService() {
@@ -48,7 +50,8 @@ public class ProxyService extends Service {
     public void onCreate() {
         super.onCreate();
         this.proxyApp = ProxyApp.getInstance();
-        this.localBroadcastManager = LocalBroadcastManager.getInstance(this.context);
+        this.localBroadcastManager = LocalBroadcastManager.getInstance(this);
+        this.localDatabase = new LocalDatabase(this);
         HandlerThread thread = new HandlerThread("ServiceStartArguments", 10);
         thread.start();
         this.mServiceHandler = new ProxyServiceHandler(thread.getLooper(), this);
@@ -57,7 +60,6 @@ public class ProxyService extends Service {
     private class ProxyServiceHandler extends Handler {
         private final String TAG;
         private ProxyService service;
-        private Context context;
 
         ProxyServiceHandler(Looper looper, ProxyService proxyService) {
             super(looper);
@@ -87,9 +89,38 @@ public class ProxyService extends Service {
                 case 6:
                     handleIronPortLogin(msg.arg1, (Intent)msg.obj);
                     break;
-                default:
+                case 7:
                     handleIronPortRefresh(msg.arg1, (Intent)msg.obj);
+                    break;
+                case 8:
+                    handleSetupAlarm(msg.arg1, (Intent)msg.obj);
+                    break;
+                case 9:
+                    handleAlarmAction(msg.arg1, (Intent)msg.obj);
+                default:
             }
+        }
+
+        private void handleAlarmAction(int startId, Intent intent) {
+            if (new LocalDatabase(service.context).getLastIdentified().equals("fortinet")) {
+                handleFortinetRefresh(startId, intent);
+            } else {
+                handleIronPortRefresh(startId, intent);
+            }
+            WakefulBroadcastReceiver.completeWakefulIntent(intent);
+        }
+
+        private void handleSetupAlarm(int startId, Intent intent) {
+            AlarmManager alarmManager = (AlarmManager) ProxyService.this
+                    .getSystemService(Service.ALARM_SERVICE);
+            Intent proxyBroadcastIntent = new Intent(ProxyService.this.context,
+                    AlarmReceiver.class);
+            proxyBroadcastIntent.setAction("proxy.service.ALARM_BROADCAST");
+            Log.i(TAG, "handleSetupAlarm: Alarm for " + localDatabase.getNextRefreshTime());
+            alarmManager.set(AlarmManager.RTC, localDatabase.getNextRefreshTime(),
+                    PendingIntent.getBroadcast(service.context, 5001, proxyBroadcastIntent,
+                            PendingIntent.FLAG_UPDATE_CURRENT));
+            stopSelf(startId);
         }
 
         private void handleIronPortRefresh(int startId, Intent intent) {
@@ -307,17 +338,7 @@ public class ProxyService extends Service {
     }
 
     private void requestCredentials(String type) {
-        SummaryNotification sn = new SummaryNotification(this.context,
-                "Need IITK credentials!", null, null, R.drawable.black_logo, null);
-        Intent resultIntent = new Intent(this.context, LoginActivity.class);
-        resultIntent.setAction(type);
-        resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = TaskStackBuilder.create(this.context)
-                .addNextIntentWithParentStack(resultIntent).getPendingIntent(1001,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-        sn.setNotificationId(1001);
-        sn.setContentIntent(pendingIntent);
-        sn.show();
+
         ProxyApp.broadcastRequestCredential(type, localBroadcastManager);
     }
 
@@ -358,20 +379,36 @@ public class ProxyService extends Service {
         Message msg = this.mServiceHandler.obtainMessage();
         msg.arg1 = startId;
         msg.obj = intent;
-        if (intent.getAction().equals("proxy.service.NETWORK_TYPE")) {
-            msg.what = 1;
-        } else if (intent.getAction().equals("proxy.service.FORTINET_LOGOUT")) {
-            msg.what = 2;
-        } else if (intent.getAction().equals("proxy.service.FORTINET_LOGIN")) {
-            msg.what = 3;
-        } else if (intent.getAction().equals("proxy.service.FORTINET_REFRESH")){
-            msg.what = 4;
-        } else if (intent.getAction().equals("proxy.service.IRONPORT_LOGOUT")) {
-            msg.what = 5;
-        } else if (intent.getAction().equals("proxy.service.IRONPORT_LOGIN")){
-            msg.what = 6;
-        } else {
-            msg.what = 7;
+        switch (intent.getAction()) {
+            case "proxy.service.NETWORK_TYPE":
+                msg.what = 1;
+                break;
+            case "proxy.service.FORTINET_LOGOUT":
+                msg.what = 2;
+                break;
+            case "proxy.service.FORTINET_LOGIN":
+                msg.what = 3;
+                break;
+            case "proxy.service.FORTINET_REFRESH":
+                msg.what = 4;
+                break;
+            case "proxy.service.IRONPORT_LOGOUT":
+                msg.what = 5;
+                break;
+            case "proxy.service.IRONPORT_LOGIN":
+                msg.what = 6;
+                break;
+            case "proxy.service.IRONPORT_REFRESH":
+                msg.what = 7;
+                break;
+            case "proxy.service.SETUP_ALARM":
+                msg.what = 8;
+                break;
+            case "proxy.service.ALARM_BROADCAST":
+                msg.what = 9;
+                break;
+            default:
+                msg.what = 9;
         }
         this.mServiceHandler.sendMessage(msg);
         return Service.START_REDELIVER_INTENT;
