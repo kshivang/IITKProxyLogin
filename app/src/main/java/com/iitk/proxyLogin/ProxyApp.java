@@ -2,6 +2,7 @@ package com.iitk.proxyLogin;
 
 import android.app.Application;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
@@ -80,8 +81,9 @@ public class ProxyApp extends Application {
         }
     }
 
-    public static void broadcastProgress(String progress,
-            LocalBroadcastManager localBroadcastManager) {
+    public static void broadcastProgress(@Nullable String type, String progress,
+                                         LocalBroadcastManager localBroadcastManager) {
+        if (type != null) localDatabase.setLastIdentified(type);
         localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_PROGRESS")
                 .putExtra("Progress", progress));
     }
@@ -108,5 +110,9 @@ public class ProxyApp extends Application {
 
     public static void broadcastCheckSession(LocalBroadcastManager localBroadcastManager) {
         localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_CHECK_SESSION"));
+    }
+
+    public static void broadcastIncorrectPassword(LocalBroadcastManager localBroadcastManager) {
+        localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_INCORRECT_PASSWORD"));
     }
 }

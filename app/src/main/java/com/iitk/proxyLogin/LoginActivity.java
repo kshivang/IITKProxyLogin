@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -29,6 +30,7 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView tvProgress;
     private LocalDatabase localDatabase;
+    private Button btLogin;
 
     private LocalBroadcastManager localBroadcastManager;
 
@@ -38,12 +40,28 @@ public class LoginActivity extends AppCompatActivity {
             switch (intent.getAction()) {
                 case "proxy.app.PROXY_PROGRESS":
                     tvProgress.setText(intent.getStringExtra("Progress"));
-                    setProgress();
                     break;
+                case "proxy.app.PROXY_REQUEST_CREDENTIAL":
+                    onFetched(true);
+                    break;
+                case "proxy.app.PROXY_LIVE_SESSION":
+                    onFetched(false);
+                    break;
+                case "proxy.app.PROXY_CHECK_SESSION":
+                    tvProgress.setText("retrying..");
+                    Intent proxyServiceIntent = new Intent(LoginActivity.this,
+                            ProxyService.class);
+                    proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
+                    startService(proxyServiceIntent);
+                    break;
+                case "proxy.app.PROXY_INCORRECT_PASSWORD":
+                    onIncorrectPassword();
+                    break;
+                default:
+                    onFetched(false);
             }
         }
     };
-
 
 //    private boolean isClicked = false;
 //    private LogHandler logHandler;
@@ -62,26 +80,27 @@ public class LoginActivity extends AppCompatActivity {
         tilPassword = (TextInputLayout) findViewById(R.id.passwordInput);
         progressBar = (ProgressBar) findViewById(android.R.id.progress);
         tvProgress = (TextView) findViewById(R.id.primaryText);
+        btLogin = (Button) findViewById(R.id.login);
 
-        tilUserName.getEditText().setText(localDatabase.getUsername() != null?
-                localDatabase.getUsername(): "");
-        tilPassword.getEditText().setText(localDatabase.getPassword() != null?
-                localDatabase.getPassword() : "");
+        EditText etUserName = tilUserName.getEditText();
+        EditText etPassword = tilPassword.getEditText();
 
-        if (tilPassword.getEditText() != null) {
-            tilPassword.getEditText()
-                    .setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        if (etUserName != null && etPassword != null) {
+            etUserName.setText(localDatabase.getUsername() != null?
+                    localDatabase.getUsername(): "");
+            etPassword.setText(localDatabase.getPassword() != null?
+                    localDatabase.getPassword() : "");
+            etPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
                     if (i == EditorInfo.IME_ACTION_DONE) {
-                        onLoginClick(findViewById(R.id.login));
+                        onLoginClick(btLogin);
                         return true;
                     }
                     return false;
                 }
             });
         }
-
 //        logHandler = LogHandler.newInstance(this, new LogHandler.OnProgressListener() {
 //            @Override
 //            public void onProgress(String message) {
@@ -100,6 +119,17 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0)
+        {
+            this.moveTaskToBack(true);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (this.localBroadcastManager != null) {
@@ -110,44 +140,63 @@ public class LoginActivity extends AppCompatActivity {
     public void onLoginClick(View view) {
         hideKeyBoard(view);
 //        if (!isClicked) {
-            EditText etUserName = tilUserName.getEditText();
-            EditText etPassword = tilPassword.getEditText();
-            if (etUserName != null && etPassword != null &&
-                    !TextUtils.isEmpty(etUserName.getText())
-                    && !TextUtils.isEmpty(etPassword.getText())) {
-
+        EditText etUserName = tilUserName.getEditText();
+        EditText etPassword = tilPassword.getEditText();
+        if (etUserName != null && etPassword != null &&
+                !TextUtils.isEmpty(etUserName.getText())
+                && !TextUtils.isEmpty(etPassword.getText())) {
 //                logHandler.onLog(etUserName.getText().toString(),
 //                        etPassword.getText().toString());
-            } else {
-                Toast.makeText(this, "Username and Password are required fields!",
-                        Toast.LENGTH_SHORT).show();
+            btLogin.setEnabled(false);
+            progressBar.setVisibility(View.VISIBLE);
+            Intent proxyServiceIntent = new Intent(this,
+                    ProxyService.class);
+            proxyServiceIntent.putExtra("username", etUserName.getText().toString());
+            proxyServiceIntent.putExtra("password", etPassword.getText().toString());
+            switch (localDatabase.getLastIdentified()) {
+                case "fortinet":
+                    proxyServiceIntent.setAction("proxy.service.FORTINET_LOGIN");
+                    break;
+                case "ironport":
+                    proxyServiceIntent.setAction("proxy.service.IRONPORT_LOGIN");
+                    break;
+                default:
+                    proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
             }
+            startService(proxyServiceIntent);
+
+        } else {
+            btLogin.setEnabled(true);
+            progressBar.setVisibility(View.GONE);
+            Toast.makeText(this, "Username and Password are required fields!",
+                    Toast.LENGTH_SHORT).show();
+        }
 //        }
     }
 
-    public void onLogoutClick(View view) {
-        hideKeyBoard(view);
-//        if (!isClicked) {
-//            logHandler.onLog(null, null);
-//        }
+    private void onFetched(boolean isLoginRequired) {
+        if (isLoginRequired){
+            onLoginClick(btLogin);
+        }
+        else {
+            progressBar.setVisibility(View.GONE);
+            startActivity(new Intent(LoginActivity.this, SessionActivity.class));
+        }
+    }
+
+    private void onIncorrectPassword() {
+        progressBar.setVisibility(View.GONE);
+        tvProgress.setText("Incorrect credentials!");
+        btLogin.setEnabled(true);
     }
 
     public void hideKeyBoard(View view) {
         if (view != null) {
-            InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(
+            InputMethodManager inputMethodManager =
+                    (InputMethodManager)getSystemService(
                     Context.INPUT_METHOD_SERVICE);
             inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
-    }
-
-    public void setProgress() {
-        progressBar.setVisibility(View.VISIBLE);
-//        isClicked = true;
-    }
-
-    public void finishProgress() {
-        progressBar.setVisibility(View.GONE);
-//        isClicked = false;
     }
 
     public static IntentFilter makeProxyUpdatesIntentFilter() {
@@ -157,6 +206,7 @@ public class LoginActivity extends AppCompatActivity {
         intentFilter.addAction("proxy.app.PROXY_NOT_IITK");
         intentFilter.addAction("proxy.app.PROXY_LIVE_SESSION");
         intentFilter.addAction("proxy.app.PROXY_CHECK_SESSION");
+        intentFilter.addAction("proxy.app.PROXY_INCORRECT_PASSWORD");
         return intentFilter;
     }
 }

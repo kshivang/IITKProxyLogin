@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
         if (timer != null) {
             timer.cancel();
         }
-        localDatabase.setLogin(false, null, null, null, null);
+//        localDatabase.setLogin(false, null, null, null, null);
         gcmNetworkManager.cancelAllTasks(MyTaskService.class);
         logHandler.showNotification("Logout", LoginActivity.class, false);
         startActivity(new Intent(MainActivity.this, LoginActivity.class));

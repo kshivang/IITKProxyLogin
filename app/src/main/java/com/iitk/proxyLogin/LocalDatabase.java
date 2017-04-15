@@ -27,24 +27,10 @@ class LocalDatabase {
         mContext = context;
     }
 
-    void setLogin(boolean logStatus, @Nullable String username,
-                  @Nullable String password, @Nullable String resetUrl,
-                  @Nullable Long time) {
+    void setLogin(@Nullable String username, @Nullable String password) {
         SharedPreferences.Editor spEditor = userLocalDatabase.edit();
-        spEditor.putBoolean(KEY_LOGIN, logStatus);
-        if (logStatus) {
-            spEditor.putString(KEY_USERNAME, username);
-            spEditor.putString(KEY_PASSWORD, password);
-            spEditor.putString(KEY_RESET_URL, resetUrl);
-            spEditor.putString(KEY_BROADCAST_MESSAGE, null);
-            if (time != null)
-                spEditor.putLong(KEY_RESET_TIME, time);
-        } else {
-            spEditor.remove(KEY_USERNAME);
-            spEditor.remove(KEY_PASSWORD);
-            spEditor.remove(KEY_RESET_URL);
-            spEditor.remove(KEY_RESET_TIME);
-        }
+        spEditor.putString(KEY_USERNAME, username);
+        spEditor.putString(KEY_PASSWORD, password);
         spEditor.apply();
     }
 

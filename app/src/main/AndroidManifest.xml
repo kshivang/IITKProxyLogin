@@ -24,6 +24,7 @@
         <!--</service>-->
         <activity
             android:name="com.iitk.proxyLogin.SplashActivity"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,15 +32,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--<activity-->
-            <!--android:name="com.iitk.proxyLogin.LoginActivity"-->
-            <!--android:screenOrientation="portrait" />-->
+        <activity
+            android:name="com.iitk.proxyLogin.LoginActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait" />
         <!--<activity-->
             <!--android:name="com.iitk.proxyLogin.MainActivity"-->
             <!--android:screenOrientation="portrait" />-->
 
         <activity android:name=".SessionActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop"
+            />
 
         <service android:enabled="true"
             android:exported="false"

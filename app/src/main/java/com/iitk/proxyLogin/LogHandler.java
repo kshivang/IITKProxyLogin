@@ -18,7 +18,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -138,7 +137,7 @@ class LogHandler {
     private void onLogin(final String username, final String password, final String magic) {
         listener.onProgress("Login..");
         StringRequest request = new StringRequest(Request.Method.POST,
-                mContext.getString(R.string.login_url),
+                mContext.getString(R.string.fortinet_login_url),
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -146,8 +145,8 @@ class LogHandler {
                                 response.lastIndexOf("\";"));
                         Toast.makeText(mContext, "Fortinet Logged in!",
                                 Toast.LENGTH_SHORT).show();
-                        localDatabase.setLogin(true, username, password, refreshURL,
-                                Calendar.getInstance().getTimeInMillis());
+//                        localDatabase.setLogin(true, username, password, refreshURL,
+//                                Calendar.getInstance().getTimeInMillis());
                         mContext.startActivity(new Intent(mContext, MainActivity.class));
                         ((Activity)mContext).finish();
                     }
