@@ -53,6 +53,15 @@ public class LoginActivity extends AppCompatActivity {
                 case "proxy.app.PROXY_INCORRECT_PASSWORD":
                     onIncorrectPassword();
                     break;
+                case "proxy.app.WIFI_STATE_CHANGE":
+                    if (localDatabase.isWifiPresent()){
+                        btLogin.setEnabled(true);
+                        tvProgress.setText("Wifi connection found");
+                    } else {
+                        btLogin.setEnabled(false);
+                        tvProgress.setText("No wifi connection found");
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
                 default:
                     onFetched(false);
             }
@@ -141,7 +150,7 @@ public class LoginActivity extends AppCompatActivity {
             startService(proxyServiceIntent);
         } else {
             btLogin.setEnabled(true);
-            progressBar.setVisibility(View.GONE);
+            progressBar.setVisibility(View.INVISIBLE);
             Toast.makeText(this, "Username and Password are required fields!",
                     Toast.LENGTH_SHORT).show();
         }
@@ -152,13 +161,13 @@ public class LoginActivity extends AppCompatActivity {
             onLoginClick(btLogin);
         }
         else {
-            progressBar.setVisibility(View.GONE);
+            progressBar.setVisibility(View.INVISIBLE);
             startActivity(new Intent(LoginActivity.this, SessionActivity.class));
         }
     }
 
     private void onIncorrectPassword() {
-        progressBar.setVisibility(View.GONE);
+        progressBar.setVisibility(View.INVISIBLE);
         tvProgress.setText("Incorrect credentials!");
         btLogin.setEnabled(true);
     }
@@ -180,6 +189,7 @@ public class LoginActivity extends AppCompatActivity {
         intentFilter.addAction("proxy.app.PROXY_LIVE_SESSION");
         intentFilter.addAction("proxy.app.PROXY_CHECK_SESSION");
         intentFilter.addAction("proxy.app.PROXY_INCORRECT_PASSWORD");
+        intentFilter.addAction("proxy.app.WIFI_STATE_CHANGE");
         return intentFilter;
     }
 }

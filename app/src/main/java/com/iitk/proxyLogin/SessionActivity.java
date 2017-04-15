@@ -45,15 +45,19 @@ public class SessionActivity extends AppCompatActivity{
                     break;
                 case "proxy.app.PROXY_CHECK_SESSION":
                     tvProgress.setText("retrying..");
-//                    Intent proxyServiceIntent = new Intent(SessionActivity.this,
-//                            ProxyService.class);
-//                    proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
-//                    startService(proxyServiceIntent);
                     break;
                 case "proxy.app.PROXY_INCORRECT_PASSWORD":
                     localDatabase.setLogin(null, null);
                     onFetched(true);
                     break;
+                case "proxy.app.WIFI_STATE_CHANGE":
+                    if (localDatabase.isWifiPresent()){
+                        enableButtons(true);
+                        tvProgress.setText("Wifi connection found");
+                    } else {
+                        enableButtons(true);
+                        tvProgress.setText("No wifi connection found");
+                    }
                 default:
                     onFetched(false);
             }
@@ -190,6 +194,7 @@ public class SessionActivity extends AppCompatActivity{
         intentFilter.addAction("proxy.app.PROXY_LIVE_SESSION");
         intentFilter.addAction("proxy.app.PROXY_CHECK_SESSION");
         intentFilter.addAction("proxy.app.PROXY_INCORRECT_PASSWORD");
+        intentFilter.addAction("proxy.app.WIFI_STATE_CHANGE");
         return intentFilter;
     }
 }

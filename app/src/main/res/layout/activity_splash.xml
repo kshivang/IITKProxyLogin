@@ -4,6 +4,13 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
+    <ImageView
+        style="@style/TopLogo"
+        tools:ignore="ContentDescription"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/appName"
+        />
+
     <TextView
         android:id="@+id/appName"
         android:layout_width="wrap_content"
@@ -14,13 +21,30 @@
         android:textSize="26sp"
         android:text="IITK PROXY LOGIN"
         />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/appName"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="60dp"
+        android:layout_marginTop="30dp"
+        android:textColor="#000"
+        android:textSize="16sp"
+        android:text="by Kumar Shivang"
+        />
     <TextView
         android:id="@+id/progress_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
         android:layout_marginBottom="60dp"
-        android:text="loading.."
+        android:textSize="16sp"
+        android:text="Loading.."
         />
 </RelativeLayout>

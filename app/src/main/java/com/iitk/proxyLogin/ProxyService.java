@@ -97,8 +97,20 @@ public class ProxyService extends Service {
                     break;
                 case 9:
                     handleAlarmAction(msg.arg1, (Intent)msg.obj);
+                    break;
+                case 10:
+                    handleGetNetworkType(msg.arg1, (Intent)msg.obj);
+                    WakefulBroadcastReceiver.completeWakefulIntent((Intent)msg.obj);
+                    break;
+                case 11:
+                    handleWifiChange(msg.arg1, (Intent)msg.obj);
                 default:
             }
+        }
+
+        private void handleWifiChange(int startId, Intent intent) {
+            ProxyApp.broadcastWifiChange(localBroadcastManager);
+            stopSelf(startId);
         }
 
         private void handleAlarmAction(int startId, Intent intent) {
@@ -338,29 +350,50 @@ public class ProxyService extends Service {
     }
 
     private void requestCredentials(String type) {
-
         ProxyApp.broadcastRequestCredential(type, localBroadcastManager);
     }
 
     private void onGet(String url, Response.Listener<String> onResponse,
                        Response.ErrorListener onError) {
-        proxyApp.addToRequestQueue(new StringRequest(Request.Method.GET,
-                url, onResponse, onError), TAG);
+        if (isWifiPresent()) {
+            proxyApp.addToRequestQueue(new StringRequest(Request.Method.GET,
+                    url, onResponse, onError), TAG);
+        } else {
+            ProxyApp.broadcastWifiChange(localBroadcastManager);
+        }
     }
 
     private void onPost(String url, Response.Listener<String> onResponse,
                          Response.ErrorListener onError,
                         final Map<String, String> params) {
-        proxyApp.addToRequestQueue(
-                new StringRequest(Request.Method.POST, url, onResponse, onError) 
-                {
-                   @Override
-                   protected Map<String, String> getParams()
-                           throws AuthFailureError {
-                       return params;
-                   }
-                }
-                , TAG);
+        if (isWifiPresent()) {
+            proxyApp.addToRequestQueue(
+                    new StringRequest(Request.Method.POST, url, onResponse, onError) {
+                        @Override
+                        protected Map<String, String> getParams()
+                                throws AuthFailureError {
+                            return params;
+                        }
+                    }
+                    , TAG);
+        } else {
+            ProxyApp.broadcastWifiChange(localBroadcastManager);
+        }
+    }
+
+    private boolean isWifiPresent() {
+        ConnectivityManager conMan = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = conMan.getActiveNetworkInfo();
+        serviceIntent.setAction("proxy.service.WIFI_STATE_CHANGE");
+        if (netInfo != null && netInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+            Log.d(TAG, "Have Wifi Connection");
+            localDatabase.setWifiState(true);
+            return true;
+        } else {
+            localDatabase.setWifiState(false);
+            return false;
+        }
     }
 
     @Nullable
@@ -407,8 +440,14 @@ public class ProxyService extends Service {
             case "proxy.service.ALARM_BROADCAST":
                 msg.what = 9;
                 break;
+            case "proxy.service.CAPTIVE_PORTAL":
+                msg.what = 10;
+                break;
+            case "proxy.service.WIFI_STATE_CHANGE":
+                msg.what = 11;
+                break;
             default:
-                msg.what = 9;
+                msg.what = 11;
         }
         this.mServiceHandler.sendMessage(msg);
         return Service.START_REDELIVER_INTENT;

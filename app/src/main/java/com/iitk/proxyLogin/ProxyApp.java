@@ -88,19 +88,39 @@ public class ProxyApp extends Application {
     public static void broadcastRequestCredential(String type,
             LocalBroadcastManager localBroadcastManager) {
 
-        SummaryNotification sn = new SummaryNotification(mInstance,
-                "Need IITK credentials!", null, null, R.drawable.black_logo, null);
-        Intent resultIntent = new Intent(mInstance, LoginActivity.class);
-        resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        PendingIntent pendingIntent = TaskStackBuilder.create(mInstance)
-                .addNextIntentWithParentStack(resultIntent).getPendingIntent(1001,
-                        PendingIntent.FLAG_UPDATE_CURRENT);
-        sn.setNotificationId(1001);
-        sn.setContentIntent(pendingIntent);
-        sn.mBuilder.setOngoing(true);
-        sn.addAction(R.drawable.ic_login, "login", pendingIntent);
-        sn.setTag(TAG);
-        sn.show();
+        LocalDatabase localDatabase = new LocalDatabase(mInstance);
+
+        if (localDatabase.getUsername() == null || localDatabase.getPassword() == null) {
+            SummaryNotification sn = new SummaryNotification(mInstance,
+                    "Need IITK credentials!", null, null, R.drawable.black_logo, null);
+            Intent resultIntent = new Intent(mInstance, LoginActivity.class);
+            resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            PendingIntent pendingIntent = TaskStackBuilder.create(mInstance)
+                    .addNextIntentWithParentStack(resultIntent).getPendingIntent(1001,
+                            PendingIntent.FLAG_UPDATE_CURRENT);
+            sn.setNotificationId(1001);
+            sn.setContentIntent(pendingIntent);
+            sn.mBuilder.setOngoing(true);
+            sn.addAction(R.drawable.ic_login, "login", pendingIntent);
+            sn.setTag(TAG);
+            sn.show();
+        } else {
+            Intent proxyServiceIntent = new Intent(mInstance, ProxyService.class);
+            switch (localDatabase.getLastIdentified()) {
+                case "fortinet":
+                    proxyServiceIntent.setAction("proxy.service.FORTINET_LOGIN");
+                    proxyServiceIntent.putExtra("username", localDatabase.getUsername());
+                    proxyServiceIntent.putExtra("password", localDatabase.getPassword());
+                    break;
+                case "ironport":
+                    proxyServiceIntent.setAction("porxy.service.IRONPORT_LOGIN");
+                    proxyServiceIntent.putExtra("username", localDatabase.getUsername());
+                    proxyServiceIntent.putExtra("password", localDatabase.getPassword());
+                    break;
+                default:
+                    proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
+            }
+        }
 
         new LocalDatabase(mInstance).setLastIdentified(type);
         localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_REQUEST_CREDENTIAL")
@@ -173,5 +193,16 @@ public class ProxyApp extends Application {
         sn.show();
 
         localBroadcastManager.sendBroadcast(new Intent("proxy.app.PROXY_INCORRECT_PASSWORD"));
+    }
+
+    public static void broadcastWifiChange(LocalBroadcastManager localBroadcastManager) {
+        LocalDatabase localDatabase = new LocalDatabase(mInstance);
+        if (localDatabase.isWifiPresent()) {
+            Intent proxyServiceIntent = new Intent(mInstance,
+                    ProxyService.class);
+            proxyServiceIntent.setAction("proxy.service.NETWORK_TYPE");
+            mInstance.startService(proxyServiceIntent);
+        }
+        localBroadcastManager.sendBroadcast(new Intent("proxy.app.WIFI_STATE_CHANGE"));
     }
 }

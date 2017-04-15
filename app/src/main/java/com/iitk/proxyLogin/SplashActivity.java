@@ -25,7 +25,6 @@ public class SplashActivity extends AppCompatActivity {
     private boolean isAnimationFinished = false;
     private TextView tvProgress;
     private LocalBroadcastManager localBroadcastManager;
-    private LocalDatabase localDatabase;
 
     private final BroadcastReceiver proxyReceiver = new BroadcastReceiver() {
         @Override
@@ -56,7 +55,6 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        localDatabase = new LocalDatabase(this);
         localBroadcastManager = LocalBroadcastManager.getInstance(this);
         localBroadcastManager.registerReceiver(proxyReceiver, makeProxyUpdatesIntentFilter());
 

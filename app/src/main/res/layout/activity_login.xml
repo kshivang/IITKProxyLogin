@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
     tools:context="LoginActivity"
-    android:gravity="center_horizontal"
+    android:gravity="center"
     android:id="@+id/llBase"
     android:orientation="vertical">
 
@@ -18,10 +18,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:textSize="20sp"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:layout_marginBottom="10dp"
+        android:textSize="18sp"
+        android:text="@string/use_your_iitk_credentilas"
         android:id="@+id/primaryText"
         />
 

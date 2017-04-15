@@ -19,4 +19,6 @@
     <string name="check_iitk_url">https://webmail1.iitk.ac.in/squirrelmail/</string>
     <string name="check_iron_port_url">http://authenticate.iitk.ac.in/netaccess/connstatus.html</string>
     <string name="fortinet_keep_alive_url">https://gateway.iitk.ac.in:1003/keepalive?0f0103060f243720</string>
+    <string name="use_your_iitk_credentilas">Use your IITK credentilas</string>
+    <string name="note_feel_free_to_close_the_app_you_can_access_app_from_notification_tray">NOTE: Feel free to close the app. You can access app from notification tray</string>
 </resources>

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
     tools:context=".SessionActivity"
-    android:gravity="center_horizontal"
+    android:gravity="center"
     android:id="@+id/llBase"
     android:orientation="vertical">
 
@@ -18,9 +18,9 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:layout_marginTop="20dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:textSize="20sp"
+        android:layout_marginLeft="40dp"
+        android:layout_marginRight="40dp"
+        android:textSize="18sp"
         android:id="@+id/primaryText"
         />
     <Button
@@ -40,6 +40,6 @@
         android:layout_height="wrap_content"
         android:layout_margin="28dp"
         android:gravity="center"
-        android:text="NOTE: Feel free to close the app. You can access always access app from notification tray"
+        android:text="@string/note_feel_free_to_close_the_app_you_can_access_app_from_notification_tray"
         />
 </LinearLayout>
