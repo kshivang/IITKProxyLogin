@@ -40,27 +40,7 @@ public class ProxyApp extends Application {
     public void onCreate() {
         super.onCreate();
         mInstance = this;
-//        if (!isBackgroundProcess()) {
-//
-//        }
     }
-
-//    private boolean isBackgroundProcess() {
-//        String currentProcessName = BuildConfig.VERSION_NAME;
-//        int pid = Process.myPid();
-//        List<RunningAppProcessInfo> runningProcessInfo =
-//                ((ActivityManager) getSystemService(Context.ACTIVITY_SERVICE))
-//                        .getRunningAppProcesses();
-//        if (!(runningProcessInfo == null || runningProcessInfo.isEmpty())) {
-//            for (RunningAppProcessInfo processInfo : runningProcessInfo) {
-//                if (processInfo.pid == pid) {
-//                    currentProcessName = processInfo.processName;
-//                    break;
-//                }
-//            }
-//        }
-//        return currentProcessName.contains("background");
-//    }
 
     public RequestQueue getRequestQueue() {
         if (mRequestQueue == null) {
