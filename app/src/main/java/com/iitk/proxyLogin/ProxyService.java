@@ -143,7 +143,39 @@ public class ProxyService extends Service {
         }
 
         private void handleIronPortRefresh(int startId, Intent intent) {
-            // todo ironport refresh tobe implemented
+            onGet(getString(R.string.ironport_url),
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            if (localDatabase.getUsername() != null &&
+                                    localDatabase.getPassword() != null) {
+                                Map<String, String> params = new HashMap<>();
+                                params.put("sid", "0");
+                                params.put("username", localDatabase.getUsername());
+                                params.put("password", localDatabase.getPassword());
+                                onPost(getString(R.string.ironport_url),
+                                        new Response.Listener<String>() {
+                                            @Override
+                                            public void onResponse(String response) {
+
+                                            }
+                                        }, new Response.ErrorListener() {
+                                            @Override
+                                            public void onErrorResponse(VolleyError error) {
+
+                                            }
+                                        }, params);
+                            } else {
+                                ProxyApp.broadcastRequestCredential("ironport",
+                                        localBroadcastManager);
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            ProxyApp.broadcastCheckSession(localBroadcastManager);
+                        }
+                    });
             stopSelf(startId);
         }
 
